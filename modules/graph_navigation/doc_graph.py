@@ -22,7 +22,7 @@ class DocGraph():
         :return:
         """
 
-        query = "SELECT id, block_id, register_id FROM links_based.all_persons_new limit 1000000"
+        query = "SELECT id, block_id, register_id FROM links_based.all_persons_2014 limit 1000000"
 
         cur = run_query(query)
         for c in cur:

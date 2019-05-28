@@ -69,7 +69,7 @@ class EntityResolution():
             # let's keep it as light as possible
             block_query = """
                             SELECT id, block_id, register_id
-                            FROM links_based.all_persons_new
+                            FROM links_based.all_persons_2014
                             LIMIT %d
                           """ % limit
             cur = basic.run_query(block_query)

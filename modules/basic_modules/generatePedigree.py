@@ -43,12 +43,12 @@ def pedigree(document, selected_id=None, blocks=None, selected_role=None):
                         p_dict = {
                         "fname": person['first_name'],
                         "lname": (person['prefix'] + ' ' + person['last_name']).strip().replace('  ', ' '),
-                        "date": person['date'][-4:],
-                        "location": person['place'][:20],
+                        "date": person['date'][:4],
+                        "location": person['place'], #[:20],
                         "register_id": person['register_id'],
                         "register_type": person['register_type'],
                         "id": person['id'],
-                        "gender": person['block_key'][:4],
+                        "gender": person['gender'],
                         "parents": []
                         }
                     else:

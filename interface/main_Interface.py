@@ -11,15 +11,23 @@ from interface import app
 # TODO: designing a nice homepage, with nice pictures and shortcuts to
 # TODO: designing a simple, but fabulous search engine.
 from modules.basic_modules.myOrm import Reference, Document
+from modules.basic_modules.basic import get_block_key
 from modules.record_linkage.hashing import Hashing
 
 new_blocks = pickle.load(open("matches_notary_civil.p", "r"))
 
-hash_table = {}
-for block_v in new_blocks:
-    
-    hash_table[block_v[0]] = block_v[1]
-    
+try:
+    story_file = open('../data/good_stories.txt','r')
+except:
+    story_file = open('data/good_stories.txt','r')
+
+lucky_stories = []
+line = story_file.readline()
+while line:
+    lucky_stories.append(line.split()[1])
+    line = story_file.readline()
+
+
 # pickle.dump(hash_table, open("hashing_v1.p", 'w'))
 
 
@@ -27,84 +35,106 @@ my_hash = Hashing()
 
 
 def routing():
-
     @app.route('/hash_matches/', methods=['GET', 'POST'])
     @app.route('/hash_matches/<p_id>', methods=['GET', 'POST'])
     def hash_matches(p_id=None):
-        user_query = request.args.get('user_query')
-
+        search_term = request.args.get('search_term')
+        lucky = request.args.get('lucky')
+        if lucky:
+            search_term = [random.choice(lucky_stories)]
+            # search_term = (
+            #     ' '.join(the_key.split('_')[:2]) + ' en ' + ' '.join(the_key.split('_')[2:]) + ' echtelieden').decode(
+            #     'utf-8', "ignore")
 
         # user_query = "Antonie_Biggelaar & Geertruida Bekkers"
         doc_list = []
-        block_key_list = []
+        feature_list = []
+        block_keys = []
         hash_key_dict = {}
         html_year = []
-        if user_query:
-            if '&' in user_query:
-                user_query = user_query.split('&')[0] + 'en' + user_query.split('&')[1] + ' echtelieden'
-            text_query = Nerd(user_query)
-            text_query.get_relations()
-            ref_list = []
-            for index, rel in enumerate(text_query.relations):
+        couple_names = [[]]
+        # ant_on_ebb_en_A535_E150_hen_na_mel_en_H536_M425
+        if search_term:
+            if ' & ' in search_term:
 
-                ref_list.append(Reference(0, rel['ref1'][1]))
-                ref_list.append(Reference(0, rel['ref2'][1]))
+                if search_term.count('&') == 1:
+                    search_term = [get_block_key(search_term.split(' & ')[0], search_term.split(' & ')[1], "DOCUMENT")]
 
-            if ref_list:
-                for index in xrange(len(ref_list)/2):
-                    ref1 = ref_list[2 * index]
-                    ref2 = ref_list[2 * index+1]
-                    key_list = [ref1.get_compact_name(), ref2.get_compact_name()]
-                    key_list = sorted(key_list)
-                    block_key_list.append(key_list[0] + '_' + key_list[1])
+                if search_term.count('&') == 2:
+                    search_term = [get_block_key(search_term.split(' & ')[0], search_term.split(' & ')[1], "DOCUMENT"),
+                                   get_block_key(search_term.split(' & ')[1], search_term.split(' & ')[2], "DOCUMENT"),
+                                   get_block_key(search_term.split(' & ')[0], search_term.split(' & ')[2], "DOCUMENT")]
 
+            # we have a blocking key as the input
+            block_keys = search_term
+            feature_list = []
 
-
-            solr_results = my_hash.search(block_key_list)
+            solr_results = my_hash.search(feature_list, block_keys)
             if solr_results:
                 # for result in solr_results:
-                #     block_list.append(result['id'])
+                # block_list.append(result['id'])
 
                 hash_key_dict = {}
+                couple_names = []
+                for block in block_keys:
+                    couple_names.append(my_hash.block_to_name(block))
+
+                # getting the highlighted blocking keys
+                highlighted_block_keys = []
                 for result in solr_results.highlighting.iteritems():
-                    hash_key_dict[result[0]] = result[1]['features'][0].replace('<em>','').replace('</em>', '')
+                    highlighted_block_keys.append(result[1]['blockKeys'][0].replace('<em>', '').replace('</em>', ''))
+
+
+                if block_keys:
+                    for result in solr_results.results:
+                        hash_key_dict[result['id']] = ''
+
+                else:
+                    for result in solr_results.highlighting.iteritems():
+                        hash_key_dict[result[0]] = result[1]['features'][0].replace('<em>', '').replace('</em>', '')
+
             if hash_key_dict:
                 doc_list = []
                 html_year = []
                 for doc_id in hash_key_dict.keys():
                     doc = Document()
                     doc.set_id(doc_id)
-                    html = doc.get_html(hash_key_dict[doc_id], block_key_list)  # {year:....., html:.....}
-                    html_year.append({'year': html['year'], 'title': html['title'], 'concept': html['concept']})
+                    html = doc.get_html(hash_key_dict[doc_id], couple_names[0], highlighted_block_keys)  # {year:....., html:.....}
+
+                    # TODO: Later we sort the html_year based on the years. For equal years we can think of reordering the card based on their type and roles!
+                    html_year.append(html)
 
                     doc_list.append(html)
 
         html_year.sort(key=lambda x: x['year'])
         doc_list.sort(key=lambda x: x['year'])
 
-        if not user_query:
-            user_query = ''
+        if not search_term:
+            search_term = ''
 
         sample_families = []
-        for i in xrange(6):
-            key = random.choice(new_blocks)[0]
-            sample_families.append((' '.join(key.split('_')[:2])
-                                   + ' en '
-                                   + ' '.join(key.split('_')[2:])
-                                   + ' echtelieden').decode('utf-8', "ignore"))
-        for i, block_key in enumerate(block_key_list):
-            block_key_list[i] = block_key.split('_')[0] +' '+ block_key.split('_')[1] + ' & ' \
-                                + block_key.split('_')[2] +' '+ block_key.split('_')[3]
+        # for i in xrange(6):
+        # key = random.choice(new_blocks)[0]
+        # sample_families.append((' '.join(key.split('_')[:2])
+        #                            + ' en '
+        #                            + ' '.join(key.split('_')[2:])
+        #                            + ' echtelieden').decode('utf-8', "ignore"))
+        for i, block_key in enumerate(feature_list):
+            feature_list[i] = block_key.split('_')[0] + ' ' + block_key.split('_')[1] + ' & ' \
+                                + block_key.split('_')[2] + ' ' + block_key.split('_')[3]
 
+        # just to make sure something nice will be in the search field.
+        search_term = ' & '.join(couple_names[0])
 
         return render_template('hash_vis.html',
                                doc_list=doc_list,
-                               user_query=user_query,
-                               block_key_list=block_key_list,
+                               search_term=search_term,
+                               block_key=block_keys,
+                               couple_name= ' & '.join(couple_names[0]),
+                               block_key_list=feature_list,
                                found_results=len(hash_key_dict),
                                sample_families=sample_families,
                                html_year=html_year)
-
 
 
     @app.route('/complex_matches/', methods=['GET', 'POST'])
@@ -130,17 +160,14 @@ def routing():
             doc = Document()
             doc.set_id(doc_id)
             doc_list_d3.append(doc.__dict_new__())
-            html = doc.get_html(block_key,[block_key])
+            html = doc.get_html(block_key, [block_key])
             # for key in block_key.split('_'):
-            #     html = html.replace(key, '<span class="highlight"> %s </span>'%key)
+            # html = html.replace(key, '<span class="highlight"> %s </span>'%key)
             doc_list.append(html)
-
-
 
             navbar_choices = []
             for a_match_id in range(p_id, p_id + 11):
-                    navbar_choices.append(a_match_id)
-
+                navbar_choices.append(a_match_id)
 
         return render_template('match_vis.html', doc_list_d3=doc_list_d3, doc_list=doc_list,
                                block_key=block_key.split('_'),
@@ -217,7 +244,7 @@ def routing():
             for ref in document.get('reference_ids').split(','):
                 ref_person = myOrm.get_person(ref)
                 if ref_person:
-                    ref_dict['Role' + str(ref_person['role']) + '_' + ref_person['gender']] = ref_person
+                    ref_dict['Role' + str(ref_person['role'])] = ref_person
 
             json_dict = generatePedigree.pedigree(document)
             return render_template('index.html', p=document, p2=ref_dict, json_dict_h=json_dict, name='bijan')
@@ -406,7 +433,6 @@ def routing():
         document_ids = [x for x in document_ids if x]
         details = {'document_id': document_ids,
                    'document_type': ''}
-
 
         families = generatePedigree.import_families()
         navbar_choices = {}

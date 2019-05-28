@@ -12,22 +12,22 @@ from modules.record_linkage import featureExtraction
 
 
 def check_a_random_pair():
-    
-
     ref1 = basic.get_person()
     ref2 = basic.get_person()
-       
+
     score_0 = basic.get_match_score(ref1, ref2, 0)
-    print ref1,'\n', ref2, '\nscore_0 is ', score_0  
+    print ref1, '\n', ref2, '\nscore_0 is ', score_0
     score_1 = basic.get_match_score(ref1, ref2, 1)
-    print 'score_1 is ', score_1 
+    print 'score_1 is ', score_1
     score_2 = basic.get_match_score(ref1, ref2, 2)
-    print 'score_2 is', score_2 
+    print 'score_2 is', score_2
 
 
 def do_matching():
     from modules.basic_modules import basic
+
     basic.do_matching()
+
 
 def feature_set_construct():
     """
@@ -46,15 +46,15 @@ def feature_set_construct():
         basic.insert_features(id, name, standard, document_type, f_list)
 
 
-
 if __name__ == '__main__':
-
-    logging.basicConfig(filename='logging.log',level=logging.DEBUG, format='%(asctime)s %(message)s')
+    logging.basicConfig(filename='logging.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
     logging.info('________________new________________')
 
     import sys
+
     sys.path.append("/Users/bijan/sandbox/stigmergic-robot-coverage")
 
     from interface import main_Interface
+
     main_Interface.main()
 

@@ -10,7 +10,7 @@ csv_writer_2 = csv.writer(open("scores.csv", "wb"))
 
 t = time.time()
 
-query = "Select first_name, last_name, block_key from all_persons_new limit 10000000"
+query = "Select first_name, last_name, block_key from all_persons_2014 limit 10000000"
 
 cur = basic.run_query(query)
 

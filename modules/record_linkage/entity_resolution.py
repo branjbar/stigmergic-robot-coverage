@@ -25,11 +25,11 @@ class FullData():
         log("load_references_all_persons started.")
         if limit:
             query = """
-                    SELECT id, first_name, last_name, place_1, date_1, register_id, register_type from all_persons_new limit %d
+                    SELECT id, first_name, last_name, place_1, date_1, register_id, register_type from all_persons_2014 limit %d
                     """ % limit
         else:
             query = """
-                    SELECT id, first_name, last_name, place_1, date_1, register_id, register_type from all_persons_new
+                    SELECT id, first_name, last_name, place_1, date_1, register_id, register_type from all_persons_2014
                     """
 
         cur = run_query(query)

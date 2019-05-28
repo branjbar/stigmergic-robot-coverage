@@ -29,12 +29,12 @@ def refresh_person_id(db):
         for ref in key[1]:
             index += 1
             if index > 2387327:
-                query += "insert into all_persons_new select %d id, id id_old, first_name, prefix, last_name, block_key," \
+                query += "insert into all_persons_2014 select %d id, id id_old, first_name, prefix, last_name, block_key," \
                          " block_id, date_1, place_1, date_2, place_2, gender, role, register_id, register_type " \
                          "from all_persons where id = %d;\n" % (index, ref)
             s += str(index) + ','
         if index > 2387320:
-            query += "update all_documents set reference_ids = '%s' where id = %d;\n" % (s[:-1], key[0])
+            query += "update all_documents_2014 set reference_ids = '%s' where id = %d;\n" % (s[:-1], key[0])
 
         if not index % 10000:
             with open("query.sql", "a") as myfile:
@@ -51,7 +51,7 @@ def referesh_register_id(db):
     """
         updates the (register_ids) in table all_documents as the person ids have been changed previously
     """
-    q = "select id, register_id from all_persons_new"
+    q = "select id, register_id from all_persons_2014"
     cur = basic.run_query(q)
     register_dict = {}
     for c in cur.fetchall():
@@ -66,7 +66,7 @@ def referesh_register_id(db):
     # register_dict = sorted(register_dict.items(), key=lambda s: s[0])
     for key in register_dict:
         index += 1
-        query += "update all_documents set reference_ids = '%s' where id = %s;\n" % (register_dict[key], key)
+        query += "update all_documents_2014 set reference_ids = '%s' where id = %s;\n" % (register_dict[key], key)
         if not index % 1000:
             with open("query2.sql", "a") as myfile:
                 myfile.write(query)

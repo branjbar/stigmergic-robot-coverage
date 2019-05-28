@@ -60,9 +60,6 @@
             {% if found_results %}
             <p class="text-center">{{found_results}} results found for:  <strong> {{couple_name}} </strong> <br> <small>({{block_key[0]}})</small> </p>
             <div class="col-xs-12  center-block">
-                    <div class="col-xs-12" />
-                    <br><br><br><br><br><br><br><br><br><br><br><br><br>
-                    </div>
                     <div class="col-xs-12" id="d3_panel" />
 
                     <script>
@@ -70,18 +67,16 @@
                                        .select("#d3_panel")
                                        .append("svg")
 
-                        doc_list = {{html_year|tojson|safe}}
-
                         padding = 20;
 
                         c_r = 6
-                        div_size=300
                         //w = svg_r.style("width").replace("px", "");
                         w = 1100;
-                        h = div_size * doc_list.length  ;
+                        h = 550;
                         svg_r.attr("height", h)
                         .attr("width",w)
 
+                        doc_list = {{html_year|tojson|safe}}
                         min_year = d3.min(doc_list, function(d){return d.year})
                         max_year = d3.max(doc_list, function(d){return d.year})
 
@@ -134,44 +129,6 @@
 
                             //Show the tooltip
                             d3.selectAll("#a" + i ).classed("hidden", false);
-
-
-                            for (i=0; i<=doc_list.length;i++){
-
-                                var xPosition = i%2? 0 : w/2 + 4 * padding ;
-                                var yPosition = year_scale(i) - div_size/2;
-
-                                //Update the tooltip position and value
-                                d3.selectAll("#a" + i)
-                                  .style("left", xPosition + "px")
-                                  .style("top", yPosition + "px")
-                                  .style("position", "absolute")
-
-
-                        svg_r.selectAll("circle")
-                        .data(doc_list)
-                            .transition()
-                            .duration(500)
-                            .attr("fill", "orange")
-                            .attr("r", 2 * c_r);
-                                                          // horizontal line
-                                svg_r.selectAll("line .c2r")
-                                .data(doc_list)
-                                .enter()
-                                .append("line")
-                                .attr("class", "c2r")
-                                .attr("id", function(d,i) {return ("a" + i)})
-                                .attr("x1", function(d,i){return w/2 + 2 * c_r -  i%2 * 4 * c_r })
-                                .attr("y1", function(d,i){return year_scale(i)})
-                                .attr("x2", function(d,i){return (i%2) ? 5 * padding : w - 5 * padding})
-                                .attr("y2", function(d,i){return year_scale(i)})
-                                .attr("stroke", "black")
-                                .attr("fill", "white")
-
-
-                            }
-
-
                             })
 
                          .on("mouseout", function(d,i) {
@@ -211,7 +168,6 @@
                         })
                         .append("title")
                         .text("click here to freeze the card!")
-
 
 
                         svg_r.selectAll("text .title")
@@ -276,17 +232,13 @@
 
 
 
-
                      </script>
 
                         <!--Here we have the hidden cards that will show up once we move on the key -->
                         {% for doc in doc_list %}
-                            <div class="col-xs-5 "  style="height:350px; overflow:auto" id="a{{loop.index-1}}">{{doc['html']|safe}}</div>
+                            <div class="col-xs-5 hidden "  style="height:550px; overflow:auto" id="a{{loop.index-1}}">{{doc['html']|safe}}</div>
                         {% endfor %}
              </div>
-                    <div class="col-xs-12" />
-                    <br><br><br><br><br><br><br><br><br><br><br><br><br>
-                    </div>
             {% else %}
                 <p class="text-warning" align="center">No results found!  </p> <p class="text-info">Either search for a couple (e.g., Anna Hout & Johannes Timmers) using the top right search bar,
                     or click on the <i class="glyphicon glyphicon-question-sign"></i> icon at the top-right corner to

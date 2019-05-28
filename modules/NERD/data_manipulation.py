@@ -10,6 +10,8 @@ from modules.basic_modules import basic
 from modules.basic_modules.basic import log
 
 __author__ = 'bijan'
+from modules.NERD.dict_based_nerd import Nerd
+
 
 def find_frequent_words():
     """
@@ -60,13 +62,11 @@ def generate_html_report():
 
     log('extracting names')
     output = []
+    # TODO: To be checked!
     for n in notarial_list:
         text = n[0]
-        text = text_pre_processing(text)
-        word_list = text.split()
-        word_spec = extract_name(word_list)
-        ref_list = extract_references(word_list,word_spec)
-        output.append([text, word_spec, ref_list])
+        nerd = Nerd(text)
+        output.append([text, nerd.word_list_labeled, nerd.get_references()])
     html_generate.export_html(output)
 
 
@@ -94,19 +94,12 @@ def export_names_to_sql_table():
     now = time.time()
     for n in notarial_list:
         text = n[0]
-        text = text_pre_processing(text)
-        word_list = text.split()
-        if word_list:
-            word_spec = extract_name(word_list)
-            ref_list = extract_references(word_list,word_spec)
-
-            for ref in ref_list:
-                ref_id += 1
-                csv_text = str(ref_id) + ',' + str(ref[1]) + ',' + str(ref[0]) + ',' + str(n[1]) + ',' + str(n[2]) + '\n'
-                with open("../../data/extracted_names.csv", "a") as my_file:
-                                    my_file.write(csv_text)
-
-
+        nerd = Nerd(text)
+        for ref in nerd.get_references():
+            ref_id += 1
+            csv_text = str(ref_id) + ',' + str(ref[1]) + ',' + str(ref[0]) + ',' + str(n[1]) + ',' + str(n[2]) + '\n'
+            with open("../../data/extracted_names.csv", "a") as my_file:
+                                my_file.write(csv_text)
 
     print time.time() - now
 
@@ -200,5 +193,5 @@ def look_for_pattern():
                             print n[2]
 
 if __name__ == "__main__":
-    find_frequent_words()
+    export_names_to_sql_table()
 

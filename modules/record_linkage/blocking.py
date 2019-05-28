@@ -7,21 +7,23 @@ import jellyfish
 import time
 import logging
 
-genders_dict = {} # this is used to store all the names with majority gender
+genders_dict = {}  # this is used to store all the names with majority gender
+
+
 
 
 def extract_block_key(person, gender_names):
     feature_set = {'id': person['id'],
-                   'first_name': person['first_name'].replace("'",""),
-                   'last_name': person['last_name'].replace("'",""),
+                   'first_name': person['first_name'].replace("'", ""),
+                   'last_name': person['last_name'].replace("'", ""),
                    'role': person['role'],
                    'register_type': person['register_type'],
                    'register_id': person['register_id']}
     if person['gender'] == "male" or person['gender'] == "female":
         feature_set['gender'] = person['gender']
 
-    if person['first_name'] and person['last_name']:
-        if not(person['gender'] == "male" or person['gender'] == "female"):
+    if p['first_name'] and person['last_name']:
+        if not (person['gender'] == "male" or person['gender'] == "female"):
             first_split = person['first_name'].split()[0]
             if first_split in gender_names['male']:
                 feature_set['gender'] = "male"
@@ -33,17 +35,21 @@ def extract_block_key(person, gender_names):
                 feature_set['gender'] = "unknown"
                 # print first_split, "unknown"
 
-        feature_set['f3f'] = person['first_name'].split()[0][:3].replace("'","")
-        feature_set['l2f'] = person['first_name'].split()[0][-2:].replace("'","")
+        feature_set['f3f'] = person['first_name'].split()[0][:3].replace("'", "")
+        feature_set['l2f'] = person['first_name'].split()[0][-2:].replace("'", "")
 
-        feature_set['f3l'] = person['last_name'].split()[0][:3].replace("'","")
-        feature_set['l2l'] = person['last_name'].split()[0][-2:].replace("'","")
+        feature_set['f3l'] = person['last_name'].split()[0][:3].replace("'", "")
+        feature_set['l2l'] = person['last_name'].split()[0][-2:].replace("'", "")
 
-        feature_set['soundex'] = jellyfish.soundex(person['first_name'].split()[0].replace("'","")) + '_' +\
-                                 jellyfish.soundex(person['last_name'].split()[0].replace("'",""))
+        feature_set['soundex'] = jellyfish.soundex(person['first_name'].split()[0].replace("'", "")) + '_' + \
+                                 jellyfish.soundex(person['last_name'].split()[0].replace("'", ""))
 
-        feature_set['block_key'] = feature_set.get('gender', '') + '_' + feature_set.get('f3f', '') + '_' + feature_set.get('f3l', '') + '_' \
-                                   + feature_set.get('l2f', '') + '_' + feature_set.get('l2l', '') + '_' + feature_set.get('soundex', '')
+        feature_set['block_key'] = feature_set.get('gender', '') + '_' + feature_set.get('f3f',
+                                                                                         '') + '_' + feature_set.get(
+            'f3l', '') + '_' \
+                                   + feature_set.get('l2f', '') + '_' + feature_set.get('l2l',
+                                                                                        '') + '_' + feature_set.get(
+            'soundex', '')
     else:
         feature_set['gender'] = ''
         feature_set['soundex'] = ''
@@ -68,13 +74,14 @@ def get_block_ids(db):
         if row[0] > max_block_id:
             max_block_id = row[0]
 
+
 def insert_blocking_keys(sb, f_set):
     """
         inserts the features and blocking key to the features table
     """
     # global block_set, max_block_id
     # if block_set.get(f_set['block_key']):
-    #     block_id = block_set.get(f_set['block_key'])
+    # block_id = block_set.get(f_set['block_key'])
     # else:
     #     max_block_id += 1
     #     block_id = max_block_id
@@ -83,13 +90,16 @@ def insert_blocking_keys(sb, f_set):
 
     insert_query = "insert into all_persons_features (id, first_name, last_name, role, document_type, document_id," \
                    " gender , f3f, f3l, l2f, l2l, soundex, block_key, block_id) values (" + str(f_set['id']) \
-                   + ",'" + f_set['first_name'] + "','" + f_set['last_name'] + "','"+ str(f_set['role']) \
-                   + "', '" + str(f_set['register_type']) + "'," + str(f_set['register_id']) + ",'" + str(f_set['gender']) \
+                   + ",'" + f_set['first_name'] + "','" + f_set['last_name'] + "','" + str(f_set['role']) \
+                   + "', '" + str(f_set['register_type']) + "'," + str(f_set['register_id']) + ",'" + str(
+        f_set['gender']) \
                    + "','" + str(f_set['f3f']) + "','" + str(f_set['f3l']) + "','" + str(f_set['l2f']) + "','" \
-                   + str(f_set['l2l']) + "','" + str(f_set['soundex']) + "','" + str(f_set['block_key']) + "'," + str(block_id) + ");"
+                   + str(f_set['l2l']) + "','" + str(f_set['soundex']) + "','" + str(f_set['block_key']) + "'," + str(
+        block_id) + ");"
 
     # print insert_query
     return insert_query
+
 
 def do_blocking(gender_names):
     """
@@ -131,8 +141,8 @@ def do_blocking(gender_names):
 
     basic.run_query(cum_query)
 
-def get_name_gender_list(db):
 
+def get_name_gender_list(db):
     male_query = '''
                 select name1 from (
                 select substring_index(first_name, ' ', 1) as name1, gender, count(*) as cnt1 from all_persons
@@ -172,11 +182,15 @@ def get_name_gender_list(db):
     for name in cur.fetchall():
         female_names.append(name[0])
 
-    return {'male':male_names, 'female': female_names}
-if __name__ == "__main__":
+    return {'male': male_names, 'female': female_names}
 
-    gender_names = get_name_gender_list()
-    max_block_id = 0
-    block_set = {}
+
+if __name__ == "__main__":
+    # gender_names = get_name_gender_list()
+    # max_block_id = 0
+    # block_set = {}
     # get_block_ids(db)
-    do_blocking(gender_names)
+    # do_blocking(gender_names)
+    # print get_block_key('Bijan', 'Ranjbar Sahraei')
+
+    pass

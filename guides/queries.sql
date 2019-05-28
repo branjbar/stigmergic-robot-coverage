@@ -14,9 +14,9 @@ FROM
         score = 2
     group by doc1 , doc2) AS T1
         inner join
-    all_documents as docu1
+    all_documents_2014 as docu1
         inner join
-    all_documents as docu2
+    all_documents_2014 as docu2
 where
     docu2.id = doc2 and docu1.id = doc1
 group by type1 , type2

@@ -132,7 +132,7 @@ class Nerd():
 
         self.word_list = self.pp_text.split()
 
-        word_spec = {}  # for word specificate
+        word_spec = {}  # for word specific
         for index, word in enumerate(self.word_list):
             word_spec[index] = None
 
@@ -181,7 +181,7 @@ class Nerd():
         reference = ''
         need_last_name_flag = False
         for index, word in enumerate(self.word_list):
-            if self.word_list_labeled[index] in [1, 2, 3] :
+            if self.word_list_labeled[index] in [1, 2, 3]:
                 reference += word + ' '
             else:
                 reference = reference.strip()
@@ -193,11 +193,11 @@ class Nerd():
                     #     refs_list[-2][1] = refs_list[-2][1] + ' ' + reference.split()[-1]
                     #     need_last_name_flag = False
 
-                # if name is single, but is connected to the next name by "dochter"
-                if index < len(self.word_list) and self.word_list[index] == 'dochter':
-
-                    need_last_name_flag = True  # let the next reference borrow its last name to this reference
-                    refs_list.append([index - ref_len, reference])
+                # TODO: Improve dochter name extraction!
+                # if none name word after name(s) is 'dochter' we still consider the name as a reference.
+                # if index < len(self.word_list) and self.word_list[index] == 'dochter':
+                #     need_last_name_flag = True  # let the next reference borrow its last name to this reference
+                #     refs_list.append([index - ref_len, reference])
                 reference = ''
 
         self.references = refs_list

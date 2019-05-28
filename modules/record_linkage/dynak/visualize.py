@@ -42,10 +42,10 @@ def get_family_edge(ref_list):
 def export_to_gephi():
     network = NX.Graph()
     query1 = """
-                SELECT ref1, (select reference_ids from all_documents WHERE id = (
-                SELECT register_id FROM links_based.all_persons_new WHERE id = ref1)),
-                ref2, (select reference_ids from all_documents where id = (
-                SELECT register_id FROM links_based.all_persons_new where id = ref2))
+                SELECT ref1, (select reference_ids from all_documents_2014 WHERE id = (
+                SELECT register_id FROM links_based.all_persons_2014 WHERE id = ref1)),
+                ref2, (select reference_ids from all_documents_2014 where id = (
+                SELECT register_id FROM links_based.all_persons_2014 where id = ref2))
                 from miss_matches order by score desc limit 1000
             """
 
